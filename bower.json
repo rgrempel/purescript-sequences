@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "purescript-quickcheck": "^1.0.0",
-    "purescript-benchotron": "https://github.com/kika/purescript-benchotron.git#0ea76de7a2d9b82224f2b02ea6cbc4b1373df5e6",
+    "purescript-benchotron": "https://github.com/hdgarrood/purescript-benchotron.git#master",
     "purescript-quickcheck-laws": "^1.0.0"
   }
 }
