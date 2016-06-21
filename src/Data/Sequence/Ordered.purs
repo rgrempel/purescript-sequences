@@ -76,7 +76,7 @@ empty :: forall a. OrdSeq a
 empty = OrdSeq FT.Empty
 
 instance eqOrdSeq :: (Eq a) => Eq (OrdSeq a) where
-  eq (OrdSeq xs) (OrdSeq ys) = FT.eqFingerTree xs ys
+  eq (OrdSeq xs) (OrdSeq ys) = unsafePartial $ FT.eqFingerTree xs ys
 
 instance showOrdSeq :: (Show a) => Show (OrdSeq a) where
   show xs = "(OrdSeq.fromFoldable [" <> strJoin "," (toUnfoldable xs) <> "])"
@@ -107,27 +107,27 @@ length = runAdditive <<< foldMap (const (Additive 1))
 partition :: forall a. (Ord a) => a -> OrdSeq a -> Tuple (OrdSeq a) (OrdSeq a)
 partition k (OrdSeq xs) = Tuple (OrdSeq (force l)) (OrdSeq (force r))
   where
-  t = FT.split (\y -> y >= Key k) xs
+  t = unsafePartial $ FT.split (\y -> y >= Key k) xs
   l = fst t
   r = snd t
 
 -- | O(log(n)). Insert the given value into the correct place in the sequence.
 insert :: forall a. (Ord a) => a -> OrdSeq a -> OrdSeq a
-insert x (OrdSeq xs) = OrdSeq (FT.append (force l) (FT.cons (Elem x) (force r)))
+insert x (OrdSeq xs) = unsafePartial $ OrdSeq (FT.append (force l) (FT.cons (Elem x) (force r)))
   where
-  t = FT.split (\y -> y >= Key x) xs
+  t = unsafePartial $ FT.split (\y -> y >= Key x) xs
   l = fst t
   r = snd t
 
 -- | O(log(n)). Delete all elements from the sequence which compare EQ to the
 -- | given value.
 deleteAll :: forall a. (Ord a) => a -> OrdSeq a -> OrdSeq a
-deleteAll x (OrdSeq xs) = OrdSeq (l <> r')
+deleteAll x (OrdSeq xs) = unsafePartial $ OrdSeq (l <> r')
   where
-  t = FT.split (\y -> y >= Key x) xs
+  t = unsafePartial $ FT.split (\y -> y >= Key x) xs
   l = force (fst t)
   r = force (snd t)
-  t' = FT.split (\y -> y > Key x) r
+  t' = unsafePartial $ FT.split (\y -> y > Key x) r
   r' = force (snd t')
 
 -- | O(m*log(n/m)), where m and n are the lengths of the longer and shorter
@@ -136,7 +136,7 @@ deleteAll x (OrdSeq xs) = OrdSeq (l <> r')
 merge :: forall a. (Ord a) => OrdSeq a -> OrdSeq a -> OrdSeq a
 merge (OrdSeq xs) (OrdSeq ys) = OrdSeq (go xs ys)
   where
-  go as bs =
+  go as bs = unsafePartial
     case FT.viewL bs of
       FT.NilL        -> as
       FT.ConsL a bs' ->
@@ -150,7 +150,7 @@ merge (OrdSeq xs) (OrdSeq ys) = OrdSeq (go xs ys)
 intersection :: forall a. (Ord a) => OrdSeq a -> OrdSeq a -> OrdSeq a
 intersection (OrdSeq xs) (OrdSeq ys) = OrdSeq (go xs ys)
   where
-  go as bs =
+  go as bs = unsafePartial
     case Tuple (FT.viewL as) (FT.viewL bs) of
       Tuple FT.NilL _ -> FT.Empty
       Tuple _ FT.NilL -> FT.Empty
